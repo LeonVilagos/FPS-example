@@ -1,6 +1,8 @@
 using System.Xml.Serialization;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.HID;
+using UnityEngine.Rendering;
 
 public class Movement : MonoBehaviour
 {
@@ -11,11 +13,18 @@ public class Movement : MonoBehaviour
     private Vector3 movementVector;
     [SerializeField]
     private GameObject CameraObject;
+    [SerializeField]
+    InputAction jump;
+    [SerializeField]
+    float jumpForce = 5.0f;
+
+    Rigidbody rb;
 
     private void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
@@ -25,10 +34,27 @@ public class Movement : MonoBehaviour
         HandleRotation();
     }
 
+    private void FixedUpdate()
+    {
+        RaycastHit hit;
+        if (jump.IsPressed())
+        {
+            if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.01f))
+            {
+                rb.AddForce(Vector3.up*jumpForce, ForceMode.Impulse);
+            }
+        }
+    }
+
+    private void OnEnable()
+    {
+        jump.Enable();
+    }
+
     void HandleMovement()
     {
-        moveVertical = Input.GetAxis("Vertical");
-        moveHorizontal = Input.GetAxis("Horizontal");
+        moveVertical = Input.GetAxisRaw("Vertical");
+        moveHorizontal = Input.GetAxisRaw("Horizontal");
 
         movementVector = new Vector3(moveHorizontal, 0, moveVertical);
 
